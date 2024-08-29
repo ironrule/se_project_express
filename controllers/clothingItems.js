@@ -3,7 +3,7 @@ const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
 
 module.exports.getClothingItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
+    .then((items) => res.send(items))
     .catch((err) => {
       console.error(err);
       return res
@@ -40,7 +40,7 @@ module.exports.deleteClothingItem = (req, res) => {
         throw error;
       }
       return ClothingItem.findByIdAndDelete(itemId).then(() =>
-        res.status(200).send({ message: "Item successfully deleted." })
+        res.send({ message: "Item successfully deleted." })
       );
     })
     .catch((err) => {

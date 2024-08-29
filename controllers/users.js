@@ -4,17 +4,6 @@ const User = require("../models/user");
 const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-    });
-};
-
 module.exports.createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   bcrypt
@@ -39,29 +28,6 @@ module.exports.createUser = (req, res) => {
     });
 };
 
-module.exports.getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
-      }
-      if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
-      }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-    });
-};
-
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -74,17 +40,23 @@ module.exports.login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).send({ token });
+      res.send({ token });
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
+      if (err.message === "Incorrect email or password.") {
+        return res
+          .status(ERROR_CODES.NOT_AUTHORIZED)
+          .send({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
+      }
       return res
-        .status(ERROR_CODES.NOT_AUTHORIZED)
-        .send({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
+        .status(ERROR_CODES.SERVER_ERROR)
+        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
 
-module.exports.getCurrentUser = (req, res) => User.findById(req.user._id)
+module.exports.getCurrentUser = (req, res) =>
+  User.findById(req.user._id)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
@@ -104,7 +76,8 @@ module.exports.getCurrentUser = (req, res) => User.findById(req.user._id)
         .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 
-module.exports.updateProfile = (req, res) => User.findByIdAndUpdate(
+module.exports.updateProfile = (req, res) =>
+  User.findByIdAndUpdate(
     req.user._id,
     { name: req.body.name, avatar: req.body.avatar },
     { new: true, runValidators: true }
@@ -113,6 +86,11 @@ module.exports.updateProfile = (req, res) => User.findByIdAndUpdate(
     .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
+      if (err.name === "ValidationError") {
+        return res
+          .status(ERROR_CODES.BAD_REQUEST)
+          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+      }
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(ERROR_CODES.NOT_FOUND)

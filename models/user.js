@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Valid strong password is required."],
-    minlength: 8,
     validate: {
       validator(value) {
         return validator.isStrongPassword(value);
