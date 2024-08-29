@@ -14,9 +14,8 @@ module.exports.getClothingItems = (req, res) => {
 
 module.exports.createClothingItem = (req, res) => {
   const { name, imageUrl, weather } = req.body;
-  const owner = req.user._id;
-  ClothingItem.create({ name, imageUrl, weather, owner })
-    .then((item) => res.status(201).send(item))
+  ClothingItem.create({ name, imageUrl, weather, owner: req.user._id })
+    .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -29,12 +28,28 @@ module.exports.createClothingItem = (req, res) => {
         .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
 };
+
 module.exports.deleteClothingItem = (req, res) => {
-  ClothingItem.findByIdAndDelete(req.params.itemId)
+  const { itemId } = req.params;
+  ClothingItem.findById(itemId)
     .orFail()
-    .then(() => res.send({ message: "Item successfully deleted." }))
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id) {
+        const error = new Error();
+        error.name = "Unauthorized";
+        throw error;
+      }
+      return ClothingItem.findByIdAndDelete(itemId).then(() =>
+        res.status(200).send({ message: "Item successfully deleted." })
+      );
+    })
     .catch((err) => {
       console.error(err);
+      if (err.name === "Unauthorized") {
+        return res
+          .status(ERROR_CODES.FORBIDDEN)
+          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+      }
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(ERROR_CODES.NOT_FOUND)
