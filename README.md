@@ -1,4 +1,4 @@
-# Project 12: WTWR (What to Wear): Back End
+# Project 13: WTWR (What to Wear): Back End
 
 ### Overview
 
@@ -19,4 +19,4 @@ This project is being developed using Node.js, Express.js, MongoDB and Mongoose.
 
 **Future Plans**
 
-Future plans for this site are to implement more functionality to the back-end server. Additional information will be added as the project progresses.
+Future plans for this site are to the front-end with the back-end server. This will require implementing additional functionality on the front-end to match what is available on the back-end. Additional information will be added as the project progresses.
