@@ -84,8 +84,7 @@ module.exports.login = (req, res) => {
     });
 };
 
-module.exports.getCurrentUser = (req, res) => {
-  return User.findById(req.user._id)
+module.exports.getCurrentUser = (req, res) => User.findById(req.user._id)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
@@ -104,10 +103,8 @@ module.exports.getCurrentUser = (req, res) => {
         .status(ERROR_CODES.SERVER_ERROR)
         .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
-};
 
-module.exports.updateProfile = (req, res) => {
-  return User.findByIdAndUpdate(
+module.exports.updateProfile = (req, res) => User.findByIdAndUpdate(
     req.user._id,
     { name: req.body.name, avatar: req.body.avatar },
     { new: true, runValidators: true }
@@ -130,4 +127,3 @@ module.exports.updateProfile = (req, res) => {
         .status(ERROR_CODES.SERVER_ERROR)
         .send({ message: ERROR_MESSAGES.SERVER_ERROR });
     });
-};
