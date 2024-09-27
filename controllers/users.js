@@ -35,24 +35,33 @@ module.exports.login = (req, res) => {
       .status(ERROR_CODES.BAD_REQUEST)
       .send({ message: ERROR_MESSAGES.BAD_REQUEST });
   }
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.send({ token });
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.message === "Incorrect email or password.") {
+  return (
+    User.findUserByCredentials(email, password)
+      .then((user) => {
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        res.send({ token });
+      })
+      // .catch((err) => {
+      //   if (err.name === "CastError") {
+      //     next(new BadRequestError("The id string is in an invalid format"));
+      //   } else {
+      //     next(err);
+      //   }
+      // });
+      .catch((err) => {
+        console.error(err);
+        if (err.message === "Incorrect email or password.") {
+          return res
+            .status(ERROR_CODES.NOT_AUTHORIZED)
+            .send({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
+        }
         return res
-          .status(ERROR_CODES.NOT_AUTHORIZED)
-          .send({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
-      }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-    });
+          .status(ERROR_CODES.SERVER_ERROR)
+          .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      })
+  );
 };
 
 module.exports.getCurrentUser = (req, res) =>
