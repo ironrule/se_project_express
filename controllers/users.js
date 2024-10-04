@@ -1,91 +1,65 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
+const { ERROR_MESSAGES } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const BadRequestError = require("../errors/bad-request-err");
+const NotFoundError = require("../errors/not-found-err");
+const ConflictError = require("../errors/conflict-err");
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then(() => res.status(201).send({ name, avatar, email }))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.BAD_REQUEST));
       }
       if (err.code === 11000) {
-        return res
-          .status(ERROR_CODES.DUPLICATE)
-          .send({ message: ERROR_MESSAGES.DUPLICATE });
+        next(new ConflictError(ERROR_MESSAGES.DUPLICATE));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res
-      .status(ERROR_CODES.BAD_REQUEST)
-      .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+    throw new BadRequestError(ERROR_MESSAGES.BAD_REQUEST);
   }
-  return (
-    User.findUserByCredentials(email, password)
-      .then((user) => {
-        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-          expiresIn: "7d",
-        });
-        res.send({ token });
-      })
-      // .catch((err) => {
-      //   if (err.name === "CastError") {
-      //     next(new BadRequestError("The id string is in an invalid format"));
-      //   } else {
-      //     next(err);
-      //   }
-      // });
-      .catch((err) => {
-        console.error(err);
-        if (err.message === "Incorrect email or password.") {
-          return res
-            .status(ERROR_CODES.NOT_AUTHORIZED)
-            .send({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
-        }
-        return res
-          .status(ERROR_CODES.SERVER_ERROR)
-          .send({ message: ERROR_MESSAGES.SERVER_ERROR });
-      })
-  );
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
+      } else {
+        next(err);
+      }
+    });
 };
 
-module.exports.getCurrentUser = (req, res) =>
+module.exports.getCurrentUser = (req, res, next) =>
   User.findById(req.user._id)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 
-module.exports.updateProfile = (req, res) =>
+module.exports.updateProfile = (req, res, next) =>
   User.findByIdAndUpdate(
     req.user._id,
     { name: req.body.name, avatar: req.body.avatar },
@@ -96,21 +70,13 @@ module.exports.updateProfile = (req, res) =>
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });

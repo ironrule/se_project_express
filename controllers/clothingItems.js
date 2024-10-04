@@ -1,43 +1,38 @@
 const ClothingItem = require("../models/clothingItem");
-const { ERROR_CODES, ERROR_MESSAGES } = require("../utils/errors");
+const { ERROR_MESSAGES } = require("../utils/errors");
+const BadRequestError = require("../errors/bad-request-err");
+const NotFoundError = require("../errors/not-found-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const UnauthorizedError = require("../errors/unauthorized-err");
 
-module.exports.getClothingItems = (req, res) => {
+module.exports.getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
     .catch((err) => {
-      console.error(err);
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
-module.exports.createClothingItem = (req, res) => {
+module.exports.createClothingItem = (req, res, next) => {
   const { name, imageUrl, weather } = req.body;
   ClothingItem.create({ name, imageUrl, weather, owner: req.user._id })
     .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
-module.exports.deleteClothingItem = (req, res) => {
+module.exports.deleteClothingItem = (req, res, next) => {
   const { itemId } = req.params;
   ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== req.user._id) {
-        const error = new Error();
-        error.name = "Unauthorized";
-        throw error;
+        throw new ForbiddenError(ERROR_MESSAGES.FORBIDDEN);
       }
       return ClothingItem.findByIdAndDelete(itemId).then(() =>
         res.send({ message: "Item successfully deleted." })
@@ -46,27 +41,19 @@ module.exports.deleteClothingItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "Unauthorized") {
-        return res
-          .status(ERROR_CODES.FORBIDDEN)
-          .send({ message: ERROR_MESSAGES.FORBIDDEN });
+        next(new UnauthorizedError(ERROR_MESSAGES.NOT_AUTHORIZED));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 };
 
-module.exports.likeItem = (req, res) =>
+module.exports.likeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
@@ -77,21 +64,15 @@ module.exports.likeItem = (req, res) =>
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });
 
-module.exports.dislikeItem = (req, res) =>
+module.exports.dislikeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -102,16 +83,10 @@ module.exports.dislikeItem = (req, res) =>
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: ERROR_MESSAGES.NOT_FOUND });
+        next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: ERROR_MESSAGES.BAD_REQUEST });
+        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
       }
-      return res
-        .status(ERROR_CODES.SERVER_ERROR)
-        .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+      next(err);
     });

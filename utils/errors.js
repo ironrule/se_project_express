@@ -1,12 +1,7 @@
-module.exports.ERROR_CODES = {
-  BAD_REQUEST: 400,
-  NOT_AUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  SERVER_ERROR: 500,
-  DUPLICATE: 409,
-};
 module.exports.ERROR_MESSAGES = {
+  SUCCESS: "Request was successful.",
+  CREATED: "Creation request was successful",
+  CAST_ERROR: "The id string is in an invalid format",
   BAD_REQUEST:
     "Invalid data passed to the methods for creating an item/user or updating an item, or invalid ID passed to the params.",
   NOT_AUTHORIZED: "User not authorized.",
