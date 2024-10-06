@@ -10,11 +10,22 @@ const { PORT = 3001 } = process.env;
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect("mongodb://localhost:27017/wtwr_db")
-  .then(() => {
-    console.log("Connected to DB");
+  .connect("mongodb://127.0.0.1:27017/wtwr_db", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch(console.error);
+  .then(() => console.log("Connected to DB"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
+
+// mongoose
+// .connect("mongodb://localhost:27017/wtwr_db")
+// .then(() => {
+//   console.log("Connected to DB");
+// })
+// .catch(console.error);
 
 app.use(cors());
 app.use(express.json());
