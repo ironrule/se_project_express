@@ -1,3 +1,4 @@
+const express = require("express");
 const router = require("express").Router();
 const userRouter = require("./users");
 const clothingItemRouter = require("./clothingItems");
@@ -7,10 +8,9 @@ const auth = require("../middlewares/auth");
 const NotFoundError = require("../errors/not-found-err");
 
 router.use("/users", auth, userRouter);
-/**============================================
- **               Crash Test
- *=============================================**/
-const express = require("express");
+// ============================================
+//               Crash Test
+// ============================================
 const app = express();
 app.get("/crash-test", () => {
   setTimeout(() => {
