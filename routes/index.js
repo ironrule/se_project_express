@@ -7,6 +7,17 @@ const auth = require("../middlewares/auth");
 const NotFoundError = require("../errors/not-found-err");
 
 router.use("/users", auth, userRouter);
+/**============================================
+ **               Crash Test
+ *=============================================**/
+const express = require("express");
+const app = express();
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
+// ============================================
 router.use("/signup", createUser);
 router.use("/signin", login);
 router.use("/items", clothingItemRouter);
