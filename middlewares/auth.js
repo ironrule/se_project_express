@@ -3,7 +3,7 @@ const { ERROR_MESSAGES } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 const UnauthorizedError = require("../errors/unauthorized-err");
 
-const handleAuthError = (req, res, next) => {
+const handleAuthError = (next) => {
   next(new UnauthorizedError(ERROR_MESSAGES.NOT_AUTHORIZED));
 };
 
@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return handleAuthError(res);
+    return handleAuthError(next);
   }
 
   const token = extractBearerToken(authorization);
@@ -22,7 +22,7 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return handleAuthError(res);
+    return handleAuthError(next);
   }
 
   req.user = payload;

@@ -3,7 +3,6 @@ const { ERROR_MESSAGES } = require("../utils/errors");
 const BadRequestError = require("../errors/bad-request-err");
 const NotFoundError = require("../errors/not-found-err");
 const ForbiddenError = require("../errors/forbidden-err");
-const UnauthorizedError = require("../errors/unauthorized-err");
 
 module.exports.getClothingItems = (req, res, next) => {
   ClothingItem.find({})
