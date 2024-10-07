@@ -36,13 +36,7 @@ module.exports.login = (req, res, next) => {
       });
       res.send({ token });
     })
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError(ERROR_MESSAGES.CAST_ERROR));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.getCurrentUser = (req, res, next) =>

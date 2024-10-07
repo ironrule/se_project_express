@@ -40,9 +40,6 @@ module.exports.deleteClothingItem = (req, res, next) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.name === "Unauthorized") {
-        next(new UnauthorizedError(ERROR_MESSAGES.NOT_AUTHORIZED));
-      }
       if (err.name === "DocumentNotFoundError") {
         next(new NotFoundError(ERROR_MESSAGES.NOT_FOUND));
       }

@@ -6,6 +6,7 @@ const { ERROR_MESSAGES } = require("../utils/errors");
 const { createUser, login } = require("../controllers/users");
 const auth = require("../middlewares/auth");
 const NotFoundError = require("../errors/not-found-err");
+const { validateLogin, validateUser } = require("../middlewares/validation");
 
 router.use("/users", auth, userRouter);
 // ============================================
@@ -18,8 +19,8 @@ app.get("/crash-test", () => {
   }, 0);
 });
 // ============================================
-router.use("/signup", createUser);
-router.use("/signin", login);
+router.use("/signup", validateUser, createUser);
+router.use("/signin", validateLogin, login);
 router.use("/items", clothingItemRouter);
 router.use((req, res, next) => {
   next(new NotFoundError(ERROR_MESSAGES.INVALID_ROUTE));
