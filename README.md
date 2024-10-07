@@ -12,6 +12,7 @@
 This project is designed to serve as the back end for my previous project:
 
 [Link to Front End](https://github.com/ironrule/se_project_react)
+
 [Link to Back End](https://github.com/ironrule/se_project_express)
 
 **Links to Deployed Site**
@@ -19,7 +20,8 @@ This project is designed to serve as the back end for my previous project:
 This project is currently hosted on Google Cloud using my domain flylnk.com and separate subdomains for the api and the React site. Below are the links:
 
 [Link to Project Main Site](https://wtwr.flylnk.com)
-[Link to Project 11](https://api.wtwr.flylnk.com)
+
+[Link to Project API site](https://api.wtwr.flylnk.com)
 
 **Development and Technologies**
 
