@@ -9,6 +9,25 @@ const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 const limiter = require("./middlewares/rateLimit");
 
+// =========================================
+const allowedOrigins = [
+  "https://wtwr.flylnk.com",
+  "https://www.wtwr.flylnk.com",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg =
+        "The CORS policy for this site does not allow access from the specified Origin.";
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+};
+// =========================================
+
 const app = express();
 const { PORT = 3001 } = process.env;
 
@@ -20,7 +39,7 @@ mongoose
   })
   .catch(console.error);
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(limiter);
 app.use(helmet());
