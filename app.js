@@ -13,6 +13,7 @@ const limiter = require("./middlewares/rateLimit");
 const allowedOrigins = [
   "https://wtwr.flylnk.com",
   "https://www.wtwr.flylnk.com",
+  "https://api.wtwr.flylnk.com",
 ];
 
 const corsOptions = {
