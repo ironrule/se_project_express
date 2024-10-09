@@ -12,7 +12,7 @@ const limiter = require("./middlewares/rateLimit");
 // =========================================
 const corsOptions = {
   origin: "https://wtwr.flylnk.com",
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 // =========================================
