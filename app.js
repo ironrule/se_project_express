@@ -10,22 +10,10 @@ const { requestLogger, errorLogger } = require("./middlewares/logger");
 const limiter = require("./middlewares/rateLimit");
 
 // =========================================
-const allowedOrigins = [
-  "https://wtwr.flylnk.com",
-  "https://www.wtwr.flylnk.com",
-  "https://api.wtwr.flylnk.com",
-];
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg =
-        "The CORS policy for this site does not allow access from the specified Origin.";
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
+  origin: "https://wtwr.flylnk.com",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 // =========================================
 
@@ -41,6 +29,7 @@ mongoose
   .catch(console.error);
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(limiter);
 app.use(helmet());
